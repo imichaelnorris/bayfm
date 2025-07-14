@@ -10,7 +10,13 @@ import math
 class SFRadio:
     def __init__(self):
         self.current_process = None
-        self.stations = [
+        self.stations = self.load_stations()
+        self.current_station = 0
+        self.scroll_offset = 0
+        
+    def load_stations(self):
+        """Load stations from stations.txt file with fallback to default stations"""
+        default_stations = [
             ("88.1", "KECG - Campus/Variety"),
             ("88.5", "KQED - NPR/Talk"),
             ("89.5", "KPOO - Community/Variety"),
@@ -39,8 +45,21 @@ class SFRadio:
             ("106.9", "KFRC - Classic Hits"),
             ("107.7", "KSAN The Bone - Classic Rock")
         ]
-        self.current_station = 0
-        self.scroll_offset = 0
+        
+        try:
+            stations = []
+            with open('stations.txt', 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#'):
+                        parts = line.split(',', 1)
+                        if len(parts) == 2:
+                            freq, name = parts
+                            stations.append((freq.strip(), name.strip()))
+            
+            return stations if stations else default_stations
+        except FileNotFoundError:
+            return default_stations
         
     def draw_radio_dial(self, stdscr, y, freq):
         """Draw compact Unicode radio dial on bottom row"""

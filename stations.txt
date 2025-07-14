@@ -1,0 +1,30 @@
+# SF Bay Area FM Radio Stations
+# Format: frequency,name
+# Lines starting with # are comments
+88.1,KECG - Campus/Variety
+88.5,KQED - NPR/Talk
+89.5,KPOO - Community/Variety
+89.7,KFJC - College/Variety
+90.1,KZSU - Stanford College
+90.3,KDFC - Classical
+90.7,KALX - Berkeley College
+91.1,KCSM - Jazz
+91.7,KALW - NPR/Talk/Variety
+92.1,KKDV - Country
+92.3,KSJO - Bollywood
+93.3,KRZZ - Regional Mexican
+94.1,KPFA - Pacifica Radio
+95.7,The Game - Sports
+96.5,KOIT - Adult Contemporary
+97.3,Alice - Alternative Rock
+98.1,Kiss FM - CHR
+99.7,Now - Pop
+100.3,The Mix - Adult Hits
+101.3,Star - Adult Contemporary
+102.1,KBLX - Urban AC
+103.7,KGO-FM - Classic Hits
+104.5,KFOG - Adult Alternative
+105.3,The Live - Alternative
+106.1,KMEL - Hip Hop/R&B
+106.9,KFRC - Classic Hits
+107.7,KSAN The Bone - Classic Rock

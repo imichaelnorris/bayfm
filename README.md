@@ -42,6 +42,21 @@ python3 sf_radio.py
 
 From jazz (KCSM 91.1) to hip-hop (KMEL 106.1), classical (KDFC 90.3) to indie rock (KALX 90.7) - discover the diverse sounds of the Bay Area!
 
+### 🎯 Customize for Your Region
+
+Not in the Bay Area? No problem! Edit `stations.txt` to add your local stations:
+
+```
+# Your Local FM Stations
+# Format: frequency,name
+88.5,Your Local NPR
+92.3,Rock Station
+95.7,Pop Music
+101.1,Classical FM
+```
+
+The app automatically loads stations from `stations.txt` on startup. If the file doesn't exist, it falls back to SF Bay Area stations.
+
 ## 🛠️ Requirements
 
 - RTL-SDR dongle
