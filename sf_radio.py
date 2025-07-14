@@ -5,6 +5,7 @@ import curses
 import signal
 import os
 import sys
+import math
 
 class SFRadio:
     def __init__(self):
@@ -41,6 +42,56 @@ class SFRadio:
         self.current_station = 0
         self.scroll_offset = 0
         
+    def draw_radio_dial(self, stdscr, y, freq):
+        """Draw compact Unicode radio dial on bottom row"""
+        height, width = stdscr.getmaxyx()
+        
+        # FM range: 88.1 - 107.7 MHz
+        min_freq = 88.1
+        max_freq = 107.7
+        
+        # Calculate position (0-1) along the dial
+        freq_val = float(freq)
+        freq_ratio = (freq_val - min_freq) / (max_freq - min_freq)
+        
+        # Create dial with Unicode block characters
+        dial_width = 40
+        start_x = (width - dial_width) // 2
+        
+        try:
+            # Draw dial background
+            dial_line = "│"
+            for i in range(dial_width - 2):
+                if i % 8 == 0:  # Tick marks every 8 positions
+                    dial_line += "┼"
+                else:
+                    dial_line += "─"
+            dial_line += "│"
+            
+            stdscr.addstr(y, start_x, dial_line)
+            
+            # Draw frequency labels below
+            freq_labels = " 88   92   96  100  104  108 "
+            if len(freq_labels) <= dial_width:
+                label_start = start_x + (dial_width - len(freq_labels)) // 2
+                stdscr.addstr(y + 1, label_start, freq_labels)
+            
+            # Draw needle position
+            needle_pos = int(1 + freq_ratio * (dial_width - 3))
+            needle_pos = max(1, min(dial_width - 2, needle_pos))
+            
+            # Use different Unicode characters for the needle
+            stdscr.addstr(y, start_x + needle_pos, "▲", curses.A_BOLD | curses.A_REVERSE)
+            
+            # Current frequency display
+            freq_display = f" {freq} MHz "
+            freq_x = start_x + dial_width + 2
+            if freq_x + len(freq_display) < width:
+                stdscr.addstr(y, freq_x, freq_display, curses.A_BOLD)
+            
+        except curses.error:
+            pass  # Ignore drawing errors if terminal is too small
+        
     def cleanup(self):
         if self.current_process:
             try:
@@ -66,8 +117,10 @@ class SFRadio:
         stdscr.addstr(0, (width - len(header)) // 2, header, curses.A_BOLD)
         stdscr.addstr(1, 0, "=" * width)
         
-        # Calculate scrolling
-        available_rows = height - 6
+        current_freq = self.stations[self.current_station][0]
+        
+        # Calculate scrolling - leave space for dial at bottom
+        available_rows = height - 8  # More space for dial
         if self.current_station < self.scroll_offset:
             self.scroll_offset = self.current_station
         elif self.current_station >= self.scroll_offset + available_rows:
@@ -87,9 +140,12 @@ class SFRadio:
             else:
                 stdscr.addstr(y, 0, f"  {line}")
         
+        # Draw compact radio dial at bottom
+        self.draw_radio_dial(stdscr, height - 6, current_freq)
+        
         # Footer
         stdscr.addstr(height-4, 0, "=" * width)
-        status = f"Playing: {self.stations[self.current_station][0]} MHz" if self.current_process else "Stopped"
+        status = f"Playing: {current_freq} MHz" if self.current_process else "Stopped"
         stdscr.addstr(height-3, (width - len(status)) // 2, status, curses.A_BOLD)
         controls = "↑/↓:Nav | Enter:Tune | q:Quit"
         stdscr.addstr(height-2, (width - len(controls)) // 2, controls)
@@ -128,6 +184,20 @@ class SFRadio:
         self.cleanup()
 
 def main():
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "--test-dial":
+        # Test dial drawing without curses
+        radio = SFRadio()
+        print("Testing dial positions for different frequencies:")
+        for freq in ["88.1", "95.7", "103.7", "107.7"]:
+            freq_val = float(freq)
+            min_freq = 88.1
+            max_freq = 107.7
+            freq_ratio = (freq_val - min_freq) / (max_freq - min_freq)
+            angle_deg = -60 + (freq_ratio * 120)
+            print(f"Freq {freq} MHz -> {angle_deg:.1f}°")
+        return
+    
     try:
         radio = SFRadio()
         curses.wrapper(radio.run)
