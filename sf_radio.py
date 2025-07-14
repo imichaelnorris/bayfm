@@ -6,6 +6,7 @@ import signal
 import os
 import sys
 import math
+import time
 
 class SFRadio:
     def __init__(self):
@@ -121,11 +122,14 @@ class SFRadio:
             self.current_process = None
             
     def start_station(self, freq):
-        self.cleanup()
-        cmd = f"rtl_fm -f {freq}M -M wbfm -s 200k -r 48000 2>/dev/null | aplay -r 48000 -f S16_LE 2>/dev/null"
-        self.current_process = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid, 
-                                              stdout=subprocess.DEVNULL, 
-                                              stderr=subprocess.DEVNULL)
+        # Only cleanup and restart if we're not already playing this frequency
+        if not self.current_process or getattr(self, 'current_freq', None) != freq:
+            self.cleanup()
+            cmd = f"rtl_fm -f {freq}M -M wbfm -s 250k -r 96000 2>/dev/null | aplay -r 96000 -f S16_LE 2>/dev/null"
+            self.current_process = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid, 
+                                                  stdout=subprocess.DEVNULL, 
+                                                  stderr=subprocess.DEVNULL)
+            self.current_freq = freq
         
     def display_ui(self, stdscr):
         stdscr.clear()
@@ -188,10 +192,12 @@ class SFRadio:
             elif key == curses.KEY_DOWN or key == ord('j'):
                 self.current_station = (self.current_station + 1) % len(self.stations)
                 self.display_ui(stdscr)
-            elif key == 10 or key == 13 or key == ord(' '):  # Enter or Space
+            elif key == curses.KEY_ENTER or key == 10 or key == 13 or key == ord(' '):  # Enter or Space
                 freq = self.stations[self.current_station][0]
                 self.start_station(freq)
                 self.display_ui(stdscr)
+                # Small delay to prevent double-key detection
+                time.sleep(0.1)
             elif key >= ord('1') and key <= ord('9'):
                 station_num = key - ord('0')
                 if 1 <= station_num <= len(self.stations):
